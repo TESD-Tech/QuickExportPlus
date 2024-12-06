@@ -8,7 +8,7 @@
     const columnNames = document.getElementById('tt').value.trim().split('\n');
 
     // Fetch JSON data from the provided URL
-    const response = await fetch('/admin/importexport/is-apps/export.json');
+    const response = await fetch('/admin/importexport/is-apps/export.json?fields=' + columnNames.join(','));
     const jsonData = await response.json();
 
     // Create a new workbook and worksheet
