@@ -5,7 +5,7 @@
   </publisher>
   <access_request>
     <cdn_request>
-      <cdn name="https://*.sheetjs.comt"/>
+      <cdn name="https://*.sheetjs.com"/>
     </cdn_request>
   </access_request>
 </plugin>

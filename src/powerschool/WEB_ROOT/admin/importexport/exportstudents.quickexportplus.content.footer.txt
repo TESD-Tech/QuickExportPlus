@@ -1,5 +1,4 @@
 <!-- START exportstudents.quickexportplus.content.footer.txt -->
-// Import the SheetJS library from the CDN (if not already included)
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
