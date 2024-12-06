@@ -1,47 +1,66 @@
-# Svelte + Vite
+# 📊 QuickExportPlus
 
-This template should help get you started developing with Svelte in Vite.
+> Because .txt files belong in the 90s! ✨
 
-## Recommended IDE Setup
+Tired of explaining to staff how to open PowerSchool's .text exports in Excel? Frustrated with the endless IT tickets about file associations? Say hello to QuickExportPlus - the plugin that transforms PowerSchool's "Quick Export" from meh to AMAZING! 🎯
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## 🤯 The Problem We Solve
 
-## Need an official Svelte framework?
+PowerSchool's default Quick Export:
+- Generates confusing .text files 😱
+- Requires Excel file association setup 😫
+- Results in endless help desk tickets 😤
+- Makes your data look like it's from 1995 📟
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+QuickExportPlus:
+- Creates proper Excel files instantly! 🎉
+- No file association setup needed 🙌
+- Zero training required 🎓
+- Makes your data look BEAUTIFUL 💅
 
-## Technical considerations
+## ✨ Features That Spark Joy
 
-**Why use this over SvelteKit?**
+- **📥 Direct Excel Export**: No more .text files - get real .xlsx files instantly
+- **📅 Smart Date Formatting**: Dates that actually look like dates (MM/DD/YYYY)
+- **🚀 Lightning Fast**: Because waiting for exports is so 2010
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+## 🎯 Perfect For
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+- School Administrators who are tired of the .text file dance
+- Data Analysts who deserve better than raw text dumps
+- IT Teams who never want to explain file associations again
+- Anyone who's ever said "Why can't this just open in Excel?"
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+## 🌟 The Magic Touch
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+QuickExportPlus doesn't just export data - it transforms it into a spreadsheet that's:
+- Easy to read 📖
+- Professional looking 👔
+- Ready for presentation 🎭
+- Actually opens in Excel! 🎉
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+## 🛠 Technical Bits
 
-**Why include `.vscode/extensions.json`?**
+Built with:
+- Svelte (for that butter-smooth performance)
+- XLSX (because Excel files shouldn't be hard)
+- Love ❤️ (and lots of coffee ☕)
+- Zero .text files 🚫
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+## 🚀 Installation
 
-**Why enable `checkJs` in the JS template?**
+Available on PowerSchool Exchange - just search for "QuickExportPlus" and say goodbye to .text files forever!
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+## 💡 Pro Tips
 
-**Why is HMR not preserving my local component state?**
+1. Use the export button next to your standard submit button
+2. Watch as your colleagues' jaws drop when it opens directly in Excel
+3. Enjoy the silence of no more "How do I open this file?" questions
+4. Accept your new status as office hero 😎
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+## 🎉 And Finally...
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+Remember: Life's too short for .text files. Make your exports beautiful (and actually usable) with QuickExportPlus! ✨
 
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+---
+Made with ❤️ for the PowerSchool community (and anyone who's ever fought with file associations)

@@ -76,6 +76,26 @@
     worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
   }
 
+  function formatDate(value) {
+    // Check if the value matches the pattern YYYY-MM-DDT00:00:00
+    const datePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
+    if (typeof value === 'string' && datePattern.test(value)) {
+      const date = new Date(value);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    }
+    return value;
+  }
+
+  function processData(data) {
+    return data.map(row => {
+      const newRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        newRow[key] = formatDate(value);
+      }
+      return newRow;
+    });
+  }
+
   async function exportToExcel() {
     isLoading = true;
     error = null;
@@ -113,10 +133,11 @@
       }
 
       const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
-      debugLog('Processed data rows', dataArray.length);
+      const processedData = processData(dataArray);
+      debugLog('Processed data rows', processedData.length);
 
       const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(dataArray);
+      const worksheet = XLSX.utils.json_to_sheet(processedData);
       
       // Apply styles and freeze pane
       styleWorksheet(worksheet); 
