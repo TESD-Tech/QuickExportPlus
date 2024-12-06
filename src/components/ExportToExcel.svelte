@@ -1,21 +1,16 @@
 <svelte:options customElement="ps-export-excel" />
-
 <script>
   import * as XLSX from 'xlsx';
-  import { onMount } from 'svelte';
 
   /** @type {string} */
   let { 
     endpoint = '/admin/importexport/is-apps/export.json',
     filename = 'export.xlsx',
-    textareaId = 'tt',  // ID of the textarea containing the fields
-    debug = false       // Debug flag
+    textareaId = 'tt', 
+    debug = false       
   } = $props();
 
-  /** @type {boolean} */
   let isLoading = $state(false);
-  
-  /** @type {string | null} */
   let error = $state(null);
 
   function debugLog(message, data) {
@@ -27,12 +22,65 @@
     }
   }
 
+  async function fetchData(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('The requested data could not be found. Please check the endpoint URL.');
+      }
+      throw new Error(`Failed to fetch data (${response.status})`); 
+    }
+    const rawText = await response.text();
+    if (!rawText.trim()) {
+      throw new Error('Server returned empty response');
+    }
+    return JSON.parse(rawText); 
+  }
+
+  function styleWorksheet(worksheet) {
+    // Freeze the top row using sheetViews
+    worksheet['!sheetViews'] = [
+      {
+        state: 'frozen',
+        ySplit: 1, 
+        xSplit: 0, // Optional: If you want to freeze the first column as well
+        topLeftCell: 'B2', // Optional, but recommended for consistency
+        activePane: 'bottomRight' // Optional, but recommended for consistency
+      }
+    ];
+
+    // Enable filtering
+    // worksheet['!autofilter'] = { ref: worksheet['!ref'] };
+    
+    // Make header row bold and auto-size columns
+    const range = XLSX.utils.decode_range(worksheet['!ref']);
+    const colWidths = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      let maxLen = 0;
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        const cell = worksheet[XLSX.utils.encode_cell({ r: R, c: C })];
+        if (cell && cell.v) {
+          const cellLen = String(cell.v).length;
+          maxLen = Math.max(maxLen, cellLen);
+        }
+        // Make header bold
+        if (R === 0) {
+          const header = XLSX.utils.encode_cell({ r: 0, c: C });
+          if (worksheet[header]) {
+            worksheet[header].s = { font: { bold: true } };
+          }
+        }
+      }
+      colWidths[C] = maxLen + 2; // Add padding
+    }
+    worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
+  }
+
   async function exportToExcel() {
     isLoading = true;
     error = null;
-    
+
     try {
-      // Get selected fields from textarea
       const textarea = document.getElementById(textareaId);
       if (!textarea) {
         throw new Error(`Could not find textarea with ID: ${textareaId}`);
@@ -52,73 +100,31 @@
         throw new Error('No valid fields selected for export');
       }
 
-      // Build the URL with fields parameter
       const url = new URL(endpoint, window.location.origin);
       url.searchParams.set('fields', fields.join(','));
       debugLog('Request URL', url.toString());
 
-      const response = await fetch(url);
-      debugLog('Response status', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data (${response.status})`);
-      }
+      let jsonData = await fetchData(url); 
 
-      const rawText = await response.text();
-      if (!rawText.trim()) {
-        throw new Error('Server returned empty response');
-      }
-      debugLog('Raw response', rawText);
-
-      let jsonData;
-      try {
-        jsonData = JSON.parse(rawText);
-      } catch (parseError) {
-        throw new Error(`Invalid JSON response: ${parseError.message}\nRaw response: ${rawText.substring(0, 100)}...`);
-      }
-
-      if (!Array.isArray(jsonData) && typeof jsonData !== 'object') {
-        throw new Error('Expected JSON array or object, got: ' + typeof jsonData);
+      // Handle empty data
+      if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
+        alert('No data found to export.'); 
+        return;
       }
 
       const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
       debugLog('Processed data rows', dataArray.length);
-      
+
       const workbook = XLSX.utils.book_new();
       const worksheet = XLSX.utils.json_to_sheet(dataArray);
       
-      // Enable filtering
-      worksheet['!autofilter'] = { ref: worksheet['!ref'] };
-      
-      // Freeze the header row
-      worksheet['!freeze'] = { xSplit: 0, ySplit: 1 };
-      
-      // Make header row bold
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const header = XLSX.utils.encode_cell({ r: 0, c: C });
-        if (!worksheet[header]) continue;
-        worksheet[header].s = { font: { bold: true } };
-      }
-      
-      // Auto-size columns
-      const colWidths = [];
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        let maxLen = 0;
-        for (let R = range.s.r; R <= range.e.r; ++R) {
-          const cell = worksheet[XLSX.utils.encode_cell({ r: R, c: C })];
-          if (cell && cell.v) {
-            const cellLen = String(cell.v).length;
-            maxLen = Math.max(maxLen, cellLen);
-          }
-        }
-        colWidths[C] = maxLen + 2; // Add padding
-      }
-      worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
+      // Apply styles and freeze pane
+      styleWorksheet(worksheet); 
 
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       XLSX.writeFile(workbook, filename);
       debugLog('Excel file created', filename);
+
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to export data';
       console.error('[ExportToExcel] Export error:', e);

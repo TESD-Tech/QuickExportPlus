@@ -1,7 +1,7 @@
 {
   "name": "ps-svelte",
   "private": true,
-  "version": "24.12.13",
+  "version": "24.12.24",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,6 +16,7 @@
     "vite": "^6.0.3"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "md5": "^2.3.0",
     "postcss-cli": "^11.0.0",
     "xlsx": "^0.18.5"

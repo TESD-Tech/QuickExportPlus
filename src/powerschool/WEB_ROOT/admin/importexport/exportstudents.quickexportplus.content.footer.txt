@@ -1,5 +1,5 @@
 <!-- START exportstudents.quickexportplus.content.footer.txt-->
-<script type="module" src="/is-QuickExportPlus/ExportToExcel.js?v=1"></script>
+<script type="module" src="/is-QuickExportPlus/ExportToExcel.js?v=~(random16)"></script>
 <style>
 ps-export-excel {
     margin-right: 8px;
