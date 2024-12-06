@@ -1,16 +1,23 @@
 {
-  "name": "QuickExportPlus",
-  "version": "24.12.05",
-  "description": "",
-  "main": "index.js",
+  "name": "ps-svelte",
+  "private": true,
+  "version": "24.12.13",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "devDependencies": {
+    "@iconify/svelte": "^4.0.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.1",
+    "@tesd-tech/ps-package": "^24.11.9",
+    "svelte": "^5.8.0",
+    "vite": "^6.0.3"
+  },
   "dependencies": {
-    "@tesd-tech/ps-i18n": "^24.12.17",
-    "@tesd-tech/ps-package": "^24.11.9"
+    "md5": "^2.3.0",
+    "postcss-cli": "^11.0.0",
+    "xlsx": "^0.18.5"
   }
 }
