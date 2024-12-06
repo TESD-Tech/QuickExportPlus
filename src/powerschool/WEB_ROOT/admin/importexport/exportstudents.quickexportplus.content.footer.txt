@@ -1,3 +1,36 @@
 <!-- START exportstudents.quickexportplus.content.footer.txt -->
-Sup.
+// Import the SheetJS library from the CDN (if not already included)
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<script>
+  async function exportToExcel() {
+    // Extract column names from the textarea
+    const columnNames = document.getElementById('tt').value.trim().split('\n');
+
+    // Fetch JSON data from the provided URL
+    const response = await fetch('/admin/importexport/is-apps/export.json');
+    const jsonData = await response.json();
+
+    // Create a new workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([columnNames, ...jsonData]);
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'PowerSchool Export');
+
+    // Generate the Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    // Create a blob and download link
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'powerschool_export.xlsx';
+    link.click();
+  }
+
+  // Call the function to initiate the export (e.g., attach to a button click)
+  // document.getElementById('exportButton').addEventListener('click', exportToExcel);
+</script>
 <!-- END exportstudents.quickexportplus.content.footer.txt -->
