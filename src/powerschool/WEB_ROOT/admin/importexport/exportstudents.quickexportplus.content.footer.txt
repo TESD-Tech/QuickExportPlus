@@ -1,36 +1,58 @@
-<!-- START exportstudents.quickexportplus.content.footer.txt -->
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script lang="javascript" src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <button type="submit" id="btnSubmit" name="btnSubmit" onclick="exportToExcel()">Export to Excel</button>
 
 <script>
-  async function exportToExcel() {
-    // Extract column names from the textarea
-    const columnNames = document.getElementById('tt').value.trim().split('\n');
+  document.addEventListener('DOMContentLoaded', () => {
+      const btnSubmit = document.getElementById('btnSubmit');
+      if (btnSubmit) {
+        btnSubmit.addEventListener('click', exportToExcel);
+      } else {
+        console.error('Error: Could not find the "Export to Excel" button.');
+      }
+    });
 
-    // Fetch JSON data from the provided URL
-    const response = await fetch('/admin/importexport/is-apps/export.json?fields=' + columnNames.join(','));
-    const jsonData = await response.json();
+    async function exportToExcel() {
+      try {
+        // Extract column names from the textarea
+        const columnNames = document.getElementById('tt').value.trim().split('\n');
 
-    // Create a new workbook and worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.aoa_to_sheet([columnNames, ...jsonData]);
+        // Fetch JSON data from the provided URL
+        const response = await fetch('/admin/importexport/is-apps/export.json?fields=' + columnNames.join(','));
 
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'PowerSchool Export');
+        if (!response.ok) {
+          throw new Error(`Network response was not ok (status: ${response.status})`);
+        }
 
-    // Generate the Excel file
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const jsonData = await response.json();
 
-    // Create a blob and download link
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'powerschool_export.xlsx';
-    link.click();
-  }
+        // Ensure SheetJS is loaded before using it
+        if (typeof XLSX === 'undefined') {
+          throw new Error('SheetJS library is not loaded.');
+        }
 
-  // Call the function to initiate the export (e.g., attach to a button click)
-  // document.getElementById('exportButton').addEventListener('click', exportToExcel);
+        // Transform JSON data into an array of arrays, extracting values directly
+        const aoaData = jsonData.map(obj => columnNames.map(colName => obj[colName.toUpperCase()] || ''));
+
+        // Create a new workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.aoa_to_sheet([columnNames, ...aoaData]);
+
+        // Add the worksheet to the workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'PowerSchool Export');
+
+        // Generate the Excel file
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+        // Create a blob and download link
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'powerschool_export.xlsx';
+        link.click();
+      } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        alert('An error occurred while exporting. Please try again later.');
+      }
+    }
 </script>
-<!-- END exportstudents.quickexportplus.content.footer.txt -->
