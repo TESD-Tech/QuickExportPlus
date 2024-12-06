@@ -1,6 +1,7 @@
 <!-- START exportstudents.quickexportplus.content.footer.txt -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <button type="submit" id="btnSubmit" name="btnSubmit" onclick="exportToExcel()">Export to Excel</button>
+
 <script>
   async function exportToExcel() {
     // Extract column names from the textarea
