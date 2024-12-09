@@ -11,6 +11,8 @@
 
   let isLoading = $state(false);
   let error = $state(null);
+  let selectedFormat = $state('xlsx');
+  let showDropdown = $state(false);
 
   function debugLog(message, data) {
     if (!debug) return;
@@ -95,6 +97,39 @@
     });
   }
 
+  function getFileExtension() {
+    switch (selectedFormat) {
+      case 'csv':
+        return '.csv';
+      case 'txt':
+        return '.txt';
+      default:
+        return '.xlsx';
+    }
+  }
+
+  function updateFilename() {
+    const baseName = filename.replace(/\.[^/.]+$/, "");
+    filename = baseName + getFileExtension();
+  }
+
+  function handleFormatSelect(format) {
+    selectedFormat = format;
+    updateFilename();
+    showDropdown = false;
+  }
+
+  function toggleDropdown(event) {
+    event.stopPropagation();
+    showDropdown = !showDropdown;
+  }
+
+  function handleClickOutside(event) {
+    if (showDropdown && !event.target.closest('.format-selector')) {
+      showDropdown = false;
+    }
+  }
+
   function handleExport(event) {
     event.preventDefault();
     isLoading = true;
@@ -158,7 +193,19 @@
         styleWorksheet(newWorksheet);
 
         XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Sheet1");
-        XLSX.writeFile(newWorkbook, filename);
+
+        // Export based on selected format
+        switch (selectedFormat) {
+          case 'csv':
+            XLSX.writeFile(newWorkbook, filename, { bookType: 'csv' });
+            break;
+          case 'txt':
+            XLSX.writeFile(newWorkbook, filename, { bookType: 'txt' });
+            break;
+          default:
+            XLSX.writeFile(newWorkbook, filename);
+        }
+
         debugLog('Excel file created', filename);
       })
       .catch(error => {
@@ -177,8 +224,9 @@
   }
 </script>
 
-<form id="exportForm">
+<div class="button-container format-selector">
   <button 
+    class="main-button"
     onclick={handleExport}
     disabled={isLoading} 
     class:loading={isLoading}
@@ -188,11 +236,26 @@
       {#if isLoading}
         Exporting...
       {:else}
-        Export to Excel
+        Export to {selectedFormat}
       {/if}
     </slot>
   </button>
-</form>
+  <button
+    class="dropdown-toggle"
+    onclick={toggleDropdown}
+    disabled={isLoading}
+    aria-label="Select export format"
+  >
+    <span class="caret-down"></span>
+  </button>
+  {#if showDropdown}
+    <div class="dropdown-content">
+      <button class="dropdown-item" onclick={() => handleFormatSelect('xlsx')}>Excel (.xlsx)</button>
+      <button class="dropdown-item" onclick={() => handleFormatSelect('csv')}>CSV (.csv)</button>
+      <button class="dropdown-item" onclick={() => handleFormatSelect('txt')}>Text (.txt)</button>
+    </div>
+  {/if}
+</div>
 
 {#if error}
   <div class="error" role="alert">
@@ -201,24 +264,75 @@
 {/if}
 
 <style>
+  .button-container {
+    display: inline-flex;
+    position: relative;
+  }
+
   button {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background-color: var(--primary-color, #4CAF50);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    line-height: 1.42857143;
     transition: background-color 0.2s, opacity 0.2s;
+    height: 32px;
   }
 
-  button:hover:not(:disabled) {
-    background-color: var(--primary-color-dark, #45a049);
+  .main-button {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    flex: 3;
+    white-space: nowrap;
   }
 
-  button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  .dropdown-toggle {
+    padding: 8px 10px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1;
+  }
+
+  .dropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 120px;
+    margin-top: 4px;
+  }
+
+  .dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #333;
+    display: block;
+    text-align: left;
+    border: none;
+    width: 100%;
+    background: none;
+  }
+
+  .dropdown-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .caret-down {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor;
+    margin-left: 4px;
   }
 
   .error {

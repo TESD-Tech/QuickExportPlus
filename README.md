@@ -60,6 +60,15 @@ Built with:
   - Matches PowerSchool's UI
   - Loading indicator for better UX
 
+## ✨ New Features
+
+- **Multi-Format Export** 🔄
+  - Excel (.xlsx) - Perfect for data analysis and sharing
+  - CSV (.csv) - Great for system imports and data migration
+  - Text (.txt) - Maximum compatibility with legacy systems
+  - One-click format switching with dropdown menu
+  - Smart file extension handling
+
 ## 🚀 Installation
 
 1. Upload the plugin to your PowerSchool instance
