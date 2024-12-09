@@ -45,7 +45,7 @@ Built with:
 - Svelte Web Components (for seamless PowerSchool integration)
 - XLSX (because Excel files shouldn't be hard)
 - Love ❤️ (and lots of coffee ☕)
-- Zero dependencies on PowerSchool components 🎯
+- Zero dependencies on PowerSchool tlist_sql tags 🎯
 
 ### 🎯 Key Improvements
 
