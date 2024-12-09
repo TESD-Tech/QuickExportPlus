@@ -3,11 +3,10 @@
   import * as XLSX from 'xlsx';
 
   /** @type {string} */
-  let { 
-    endpoint = '/admin/importexport/is-apps/export.json',
-    filename = 'export.xlsx',
-    textareaId = 'tt', 
-    debug = false       
+  let {
+    filename = 'student_data.xlsx',
+    formSelector = 'form.noSubmitLoading',
+    debug = false
   } = $props();
 
   let isLoading = $state(false);
@@ -96,79 +95,104 @@
     });
   }
 
-  async function exportToExcel() {
+  function handleExport(event) {
+    event.preventDefault();
     isLoading = true;
     error = null;
 
     try {
-      const textarea = document.getElementById(textareaId);
-      if (!textarea) {
-        throw new Error(`Could not find textarea with ID: ${textareaId}`);
+      const form = document.querySelector(formSelector);
+      if (!form) {
+        throw new Error(`Could not find form with selector: ${formSelector}`);
       }
 
-      const textareaValue = textarea.value.trim();
-      debugLog('Textarea value', textareaValue);
-      
-      if (!textareaValue) {
-        throw new Error('Please select fields to export');
-      }
+      // Create a new FormData object from the form
+      const formData = new FormData(form);
 
-      const fields = textareaValue.split('\n').filter(field => field.trim());
-      debugLog('Found fields', fields);
+      // Convert FormData to a plain object for easier logging
+      const plainFormData = {};
+      formData.forEach((value, key) => {
+        plainFormData[key] = value;
+      });
 
-      if (!fields.length) {
-        throw new Error('No valid fields selected for export');
-      }
+      debugLog('Form Data:', plainFormData);
 
-      const url = new URL(endpoint, window.location.origin);
-      url.searchParams.set('fields', fields.join(','));
-      debugLog('Request URL', url.toString());
+      // Use fetch to make the same request as the form
+      fetch(form.action, {
+        method: form.method,
+        body: formData,
+        credentials: 'include'
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(textData => {
+        if (!textData.trim()) {
+          throw new Error('Server returned empty response');
+        }
 
-      let jsonData = await fetchData(url); 
+        debugLog('Received text data', textData.substring(0, 100) + '...');
 
-      // Handle empty data
-      if (!jsonData || (Array.isArray(jsonData) && jsonData.length === 0)) {
-        alert('No data found to export.'); 
-        return;
-      }
+        // Parse the text data (assuming tab-separated values)
+        const workbook = XLSX.read(textData, { type: "string", raw: true });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
 
-      const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
-      const processedData = processData(dataArray);
-      debugLog('Processed data rows', processedData.length);
+        // Remove the zero-indexed row if it exists
+        if (jsonData.length > 0 && jsonData[0].length > 0 && jsonData[0][0] === '0') {
+          // Remove the first column from each row
+          jsonData.forEach(row => row.shift());
+        }
 
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(processedData);
-      
-      // Apply styles and freeze pane
-      styleWorksheet(worksheet); 
+        const processedData = processData(jsonData);
+        debugLog('Processed data rows', processedData.length);
 
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-      XLSX.writeFile(workbook, filename);
-      debugLog('Excel file created', filename);
+        const newWorkbook = XLSX.utils.book_new();
+        const newWorksheet = XLSX.utils.json_to_sheet(processedData);
+
+        // Apply styles and freeze pane
+        styleWorksheet(newWorksheet);
+
+        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Sheet1");
+        XLSX.writeFile(newWorkbook, filename);
+        debugLog('Excel file created', filename);
+      })
+      .catch(error => {
+        console.error('[ExportToExcel] Export error:', error);
+        this.error = error instanceof Error ? error.message : 'Failed to export data';
+      })
+      .finally(() => {
+        isLoading = false;
+      });
 
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to export data';
       console.error('[ExportToExcel] Export error:', e);
-    } finally {
       isLoading = false;
     }
   }
 </script>
 
-<button 
-  onclick={exportToExcel} 
-  disabled={isLoading} 
-  class:loading={isLoading}
-  aria-busy={isLoading}
->
-  <slot>
-    {#if isLoading}
-      Exporting...
-    {:else}
-      Export to Excel
-    {/if}
-  </slot>
-</button>
+<form id="exportForm">
+  <button 
+    onclick={handleExport}
+    disabled={isLoading} 
+    class:loading={isLoading}
+    aria-busy={isLoading}
+  >
+    <slot>
+      {#if isLoading}
+        Exporting...
+      {:else}
+        Export to Excel
+      {/if}
+    </slot>
+  </button>
+</form>
 
 {#if error}
   <div class="error" role="alert">
@@ -205,6 +229,7 @@
 
   .loading {
     position: relative;
+    padding-right: 2em; /* Make room for the spinner */
   }
 
   .loading::after {
@@ -217,11 +242,13 @@
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
     margin-left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   @keyframes spin {
     to {
-      transform: rotate(360deg);
+      transform: translateY(-50%) rotate(360deg);
     }
   }
 </style>

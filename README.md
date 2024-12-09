@@ -42,21 +42,45 @@ QuickExportPlus doesn't just export data - it transforms it into a spreadsheet t
 ## 🛠 Technical Bits
 
 Built with:
-- Svelte (for that butter-smooth performance)
+- Svelte Web Components (for seamless PowerSchool integration)
 - XLSX (because Excel files shouldn't be hard)
 - Love ❤️ (and lots of coffee ☕)
-- Zero .text files 🚫
+- Zero dependencies on PowerSchool components 🎯
+
+### 🎯 Key Improvements
+
+- **Form-Independent**: Works with any PowerSchool form, no longer tied to tlist_sql components
+- **Smart Excel Generation**: 
+  - Properly formatted headers
+  - Frozen top row for easy navigation
+  - Auto-sized columns
+  - Smart date formatting (MM/DD/YYYY)
+- **Seamless Integration**: 
+  - Appears right next to the Submit button
+  - Matches PowerSchool's UI
+  - Loading indicator for better UX
 
 ## 🚀 Installation
 
-Available on PowerSchool Exchange - just search for "QuickExportPlus" and say goodbye to .text files forever!
+1. Upload the plugin to your PowerSchool instance
+2. Install and enable through Plugin Management
+3. Navigate to Quick Export (System > Page and Data Management > Quick Export)
+4. Enjoy one-click Excel exports! 🎉
 
-## 💡 Pro Tips
+## 💡 Usage
 
-1. Use the export button next to your standard submit button
-2. Watch as your colleagues' jaws drop when it opens directly in Excel
-3. Enjoy the silence of no more "How do I open this file?" questions
-4. Accept your new status as office hero 😎
+1. Set up your export as usual in PowerSchool
+2. Instead of clicking "Submit" and dealing with .text files:
+   - Click "Export to Excel" for instant .xlsx files
+   - Watch the magic happen! ✨
+
+## 🤝 Contributing
+
+Found a bug? Have a feature request? We'd love to hear from you! Open an issue or submit a pull request.
+
+## 📝 License
+
+MIT - Because sharing is caring! 💝
 
 ## 🎉 And Finally...
 

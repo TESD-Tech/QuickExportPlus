@@ -2,7 +2,14 @@
 <script type="module" src="/is-QuickExportPlus/ExportToExcel.js?v=~(random16)"></script>
 <style>
 ps-export-excel {
+    display: inline-block;
     margin-right: 8px;
+    vertical-align: middle;
+}
+ps-export-excel button {
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
 }
 </style>
 <ps-export-excel></ps-export-excel>
