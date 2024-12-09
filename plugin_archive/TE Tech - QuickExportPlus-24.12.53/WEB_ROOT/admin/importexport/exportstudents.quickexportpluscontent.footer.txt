@@ -1,0 +1,2 @@
+<script type="module" src="/is-QuickExportPlus/ExportToExcel.js?v=1"></script>
+<ps-export-excel></ps-export-excel>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>T/E Tech - Quick Export Plus</title>
+  ~[wc:commonscripts]
+  <style>
+    .grid {
+      margin-top: 20px;
+    }
+
+    input.name {
+      width: 98%;
+    }
+
+    .td-active {
+      text-align: center;
+    }
+
+    .td-id {
+      text-align: center;
+    }
+
+    .td-groupName {
+      text-align: center;
+    }
+
+    .groupName {
+      width: 75%;
+    }
+  </style>
+  <link href="/images/css/screen.css" rel="stylesheet" media="screen">
+  <link href="/images/css/print.css" rel="stylesheet" media="print">
+</head>
+~[if#admin.security.inrole=9,999]
+
+<body>
+  ~[wc:admin_header_css]
+  <a href="/admin/home.html" target="_top">Start Page </a> > T/E Tech > Quick Export Plus
+  ~[wc:admin_navigation_css]
+
+  <h1>Quick Export Plus</h1>
+
+  <form action="/admin/changesrecorded.white.html" method="POST">
+    <div class="box-round">
+      <div id="sponsor" class="box-round">
+        <table>
+          <thead>
+            <th>Option</th>
+            <th>Setting</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hide Stock PowerSchool Quick Export Submit Button</td>
+              <td><input type="checkbox" value="1" name="[pref]qep_hide_submit" id="qep_hide_submit"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <br>
+      <div class="button-row">
+        <input type="hidden" name="ac" value="prim">~[submitbutton]
+      </div>
+    </div>
+  </form>
+
+  ~[wc:admin_footer_css]
+</body>
+<footer>
+</footer>
+[/if#admin]
+
+</html>
