@@ -1,0 +1,23 @@
+{
+  "pages": [
+    {
+      "htmlID": "quickExportPlusMenu",
+      "title": "Quick Export Plus",
+      "version": "24.12.53",
+      "sortOrder": 1,
+      "pageURL": null,
+      "parentHTMLID": "navSystemManagementSection",
+      "districtLevelContext": 0,
+      "children": [
+        {
+          "htmlID": "quickExportPlusSettings",
+          "title": "Settings",
+          "sortOrder": 100,
+          "pageURL": "/admin/tech/quickExportPlus/settings.html",
+          "districtLevelContext": 0,
+          "version": "24.12.53"
+        }
+      ]
+    }
+  ]
+}

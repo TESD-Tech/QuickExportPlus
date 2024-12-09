@@ -4,7 +4,7 @@
 
   /** @type {string} */
   let {
-    filename = 'student_data.xlsx',
+    filename = 'exported_data.xlsx',
     formSelector = 'form.noSubmitLoading',
     debug = false
   } = $props();

@@ -66,8 +66,8 @@ Built with:
   - Excel (.xlsx) - Perfect for data analysis and sharing
   - CSV (.csv) - Great for system imports and data migration
   - Text (.txt) - Maximum compatibility with legacy systems
-  - One-click format switching with dropdown menu
-  - Smart file extension handling
+  - Staff Exports, too!
+  - Disable stock "submit" button (System Management > Quick Export Plus > Settings)
 
 ## 🚀 Installation
 

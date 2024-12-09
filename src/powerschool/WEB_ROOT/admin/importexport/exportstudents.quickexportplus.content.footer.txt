@@ -1,25 +1,3 @@
 <!-- START exportstudents.quickexportplus.content.footer.txt-->
-<script type="module" src="/is-QuickExportPlus/ExportToExcel.js?v=~(random16)"></script>
-<style>
-ps-export-excel {
-    display: inline-block;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-ps-export-excel button {
-    padding: 6px 12px;
-    font-size: 14px;
-    line-height: 1.42857143;
-}
-</style>
-<ps-export-excel></ps-export-excel>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const exportElement = document.querySelector('ps-export-excel');
-    const submitButton = document.querySelector('#btnSubmit');
-    if (exportElement && submitButton) {
-        submitButton.insertAdjacentElement('beforebegin', exportElement);
-    }
-});
-</script>
+~[wc:quickExportPlus]
 <!-- END exportstudents.quickexportplus.content.footer.txt -->
