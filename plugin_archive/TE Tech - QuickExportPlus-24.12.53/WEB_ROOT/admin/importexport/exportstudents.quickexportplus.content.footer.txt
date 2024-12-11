@@ -1,3 +1,0 @@
-<!-- START exportstudents.quickexportplus.content.footer.txt-->
-~[wc:quickExportPlus]
-<!-- END exportstudents.quickexportplus.content.footer.txt -->

@@ -11,8 +11,21 @@
 
   let isLoading = $state(false);
   let error = $state(null);
-  let selectedFormat = $state('xlsx');
+  let selectedFormat = $state(getStoredFormat());
   let showDropdown = $state(false);
+
+  function getStoredFormat() {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('ps-export-excel-format') || 'xlsx';
+    }
+    return 'xlsx';
+  }
+
+  function setStoredFormat(format) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('ps-export-excel-format', format);
+    }
+  }
 
   function debugLog(message, data) {
     if (!debug) return;
@@ -113,9 +126,9 @@
     filename = baseName + getFileExtension();
   }
 
-  function handleFormatSelect(format) {
+  function selectFormat(format) {
     selectedFormat = format;
-    updateFilename();
+    setStoredFormat(format);
     showDropdown = false;
   }
 
@@ -250,9 +263,9 @@
   </button>
   {#if showDropdown}
     <div class="dropdown-content">
-      <button class="dropdown-item" onclick={() => handleFormatSelect('xlsx')}>Excel (.xlsx)</button>
-      <button class="dropdown-item" onclick={() => handleFormatSelect('csv')}>CSV (.csv)</button>
-      <button class="dropdown-item" onclick={() => handleFormatSelect('txt')}>Text (.txt)</button>
+      <button class="dropdown-item" onclick={() => selectFormat('xlsx')}>Excel (.xlsx)</button>
+      <button class="dropdown-item" onclick={() => selectFormat('csv')}>CSV (.csv)</button>
+      <button class="dropdown-item" onclick={() => selectFormat('txt')}>Text (.txt)</button>
     </div>
   {/if}
 </div>

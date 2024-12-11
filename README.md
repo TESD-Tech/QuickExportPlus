@@ -67,6 +67,7 @@ Built with:
   - CSV (.csv) - Great for system imports and data migration
   - Text (.txt) - Maximum compatibility with legacy systems
   - Staff Exports, too!
+  - Remembers your preferred export format
   - Disable stock "submit" button (System Management > Quick Export Plus > Settings)
 
 ## 🚀 Installation
