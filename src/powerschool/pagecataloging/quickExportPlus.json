@@ -3,7 +3,7 @@
     {
       "htmlID": "quickExportPlusMenu",
       "title": "Quick Export Plus",
-      "version": "24.12.60",
+      "version": "24.12.66",
       "sortOrder": 1,
       "pageURL": null,
       "parentHTMLID": "navSystemManagementSection",
@@ -15,7 +15,7 @@
           "sortOrder": 100,
           "pageURL": "/admin/tech/quickExportPlus/settings.html",
           "districtLevelContext": 0,
-          "version": "24.12.60"
+          "version": "24.12.66"
         }
       ]
     }

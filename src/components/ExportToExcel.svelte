@@ -44,11 +44,130 @@
       }
       throw new Error(`Failed to fetch data (${response.status})`); 
     }
-    const rawText = await response.text();
-    if (!rawText.trim()) {
+    return response.text();
+  }
+
+  function processData(textData) {
+    if (!textData.trim()) {
       throw new Error('Server returned empty response');
     }
-    return JSON.parse(rawText); 
+
+    debugLog('Received text data', textData.substring(0, 100) + '...');
+
+    // Parse the text data (assuming tab-separated values)
+    const workbook = XLSX.read(textData, { type: "string", raw: true });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
+
+    // Process the data
+    return jsonData.map(row => {
+      const newRow = {};
+      for (const [key, value] of Object.entries(row)) {
+        newRow[key] = formatDate(value);
+      }
+      return newRow;
+    });
+  }
+
+  function formatDate(value) {
+    // Check if the value matches the pattern YYYY-MM-DDT00:00:00
+    const datePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
+    if (typeof value === 'string' && datePattern.test(value)) {
+      const date = new Date(value);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    }
+    return value;
+  }
+
+  function getFileExtension() {
+    switch (selectedFormat) {
+      case 'csv':
+        return '.csv';
+      case 'txt':
+        return '.txt';
+      default:
+        return '.xlsx';
+    }
+  }
+
+  function selectFormat(format) {
+    selectedFormat = format;
+    setStoredFormat(format);
+    showDropdown = false;
+  }
+
+  function toggleDropdown(event) {
+    event.stopPropagation();
+    showDropdown = !showDropdown;
+  }
+
+  function handleClickOutside(event) {
+    if (showDropdown && !event.target.closest('.format-selector')) {
+      showDropdown = false;
+    }
+  }
+
+  function handleExport(event) {
+    event.preventDefault();
+    isLoading = true;
+    error = null;
+
+    try {
+      const form = document.querySelector(formSelector);
+      if (!form) {
+        throw new Error('Form not found');
+      }
+
+      const formData = new FormData(form);
+      const url = form.action + '?' + new URLSearchParams(formData).toString();
+
+      debugLog('Fetching data from URL', url);
+
+      fetchData(url)
+      .then(textData => {
+        const processedData = processData(textData);
+        debugLog('Processed data', processedData);
+
+        const newWorkbook = XLSX.utils.book_new();
+        const newWorksheet = XLSX.utils.json_to_sheet(processedData);
+
+        // Apply styles and freeze pane
+        styleWorksheet(newWorksheet);
+
+        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Sheet1");
+
+        // Get base filename without extension
+        const baseName = filename.replace(/\.[^/.]+$/, "");
+        const exportFilename = baseName + getFileExtension();
+
+        // Export based on selected format
+        switch (selectedFormat) {
+          case 'csv':
+            XLSX.writeFile(newWorkbook, exportFilename, { bookType: 'csv' });
+            break;
+          case 'txt':
+            XLSX.writeFile(newWorkbook, exportFilename, { bookType: 'txt' });
+            break;
+          default:
+            XLSX.writeFile(newWorkbook, exportFilename);
+        }
+
+        debugLog('Excel file created', exportFilename);
+      })
+      .catch(error => {
+        console.error('[ExportToExcel] Export error:', error);
+        this.error = error instanceof Error ? error.message : 'Failed to export data';
+      })
+      .finally(() => {
+        isLoading = false;
+      });
+
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to export data';
+      console.error('[ExportToExcel] Export error:', e);
+      isLoading = false;
+    }
   }
 
   function styleWorksheet(worksheet) {
@@ -88,152 +207,6 @@
       colWidths[C] = maxLen + 2; // Add padding
     }
     worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
-  }
-
-  function formatDate(value) {
-    // Check if the value matches the pattern YYYY-MM-DDT00:00:00
-    const datePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
-    if (typeof value === 'string' && datePattern.test(value)) {
-      const date = new Date(value);
-      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
-    }
-    return value;
-  }
-
-  function processData(data) {
-    return data.map(row => {
-      const newRow = {};
-      for (const [key, value] of Object.entries(row)) {
-        newRow[key] = formatDate(value);
-      }
-      return newRow;
-    });
-  }
-
-  function getFileExtension() {
-    switch (selectedFormat) {
-      case 'csv':
-        return '.csv';
-      case 'txt':
-        return '.txt';
-      default:
-        return '.xlsx';
-    }
-  }
-
-  function updateFilename() {
-    const baseName = filename.replace(/\.[^/.]+$/, "");
-    filename = baseName + getFileExtension();
-  }
-
-  function selectFormat(format) {
-    selectedFormat = format;
-    setStoredFormat(format);
-    showDropdown = false;
-  }
-
-  function toggleDropdown(event) {
-    event.stopPropagation();
-    showDropdown = !showDropdown;
-  }
-
-  function handleClickOutside(event) {
-    if (showDropdown && !event.target.closest('.format-selector')) {
-      showDropdown = false;
-    }
-  }
-
-  function handleExport(event) {
-    event.preventDefault();
-    isLoading = true;
-    error = null;
-
-    try {
-      const form = document.querySelector(formSelector);
-      if (!form) {
-        throw new Error(`Could not find form with selector: ${formSelector}`);
-      }
-
-      // Create a new FormData object from the form
-      const formData = new FormData(form);
-
-      // Convert FormData to a plain object for easier logging
-      const plainFormData = {};
-      formData.forEach((value, key) => {
-        plainFormData[key] = value;
-      });
-
-      debugLog('Form Data:', plainFormData);
-
-      // Use fetch to make the same request as the form
-      fetch(form.action, {
-        method: form.method,
-        body: formData,
-        credentials: 'include'
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then(textData => {
-        if (!textData.trim()) {
-          throw new Error('Server returned empty response');
-        }
-
-        debugLog('Received text data', textData.substring(0, 100) + '...');
-
-        // Parse the text data (assuming tab-separated values)
-        const workbook = XLSX.read(textData, { type: "string", raw: true });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 0 });
-
-        // Remove the zero-indexed row if it exists
-        if (jsonData.length > 0 && jsonData[0].length > 0 && jsonData[0][0] === '0') {
-          // Remove the first column from each row
-          jsonData.forEach(row => row.shift());
-        }
-
-        const processedData = processData(jsonData);
-        debugLog('Processed data rows', processedData.length);
-
-        const newWorkbook = XLSX.utils.book_new();
-        const newWorksheet = XLSX.utils.json_to_sheet(processedData);
-
-        // Apply styles and freeze pane
-        styleWorksheet(newWorksheet);
-
-        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "Sheet1");
-
-        // Export based on selected format
-        switch (selectedFormat) {
-          case 'csv':
-            XLSX.writeFile(newWorkbook, filename, { bookType: 'csv' });
-            break;
-          case 'txt':
-            XLSX.writeFile(newWorkbook, filename, { bookType: 'txt' });
-            break;
-          default:
-            XLSX.writeFile(newWorkbook, filename);
-        }
-
-        debugLog('Excel file created', filename);
-      })
-      .catch(error => {
-        console.error('[ExportToExcel] Export error:', error);
-        this.error = error instanceof Error ? error.message : 'Failed to export data';
-      })
-      .finally(() => {
-        isLoading = false;
-      });
-
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to export data';
-      console.error('[ExportToExcel] Export error:', e);
-      isLoading = false;
-    }
   }
 </script>
 

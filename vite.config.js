@@ -29,7 +29,7 @@ export default defineConfig({
     outDir: 'dist/WEB_ROOT/is-QuickExportPlus/',
     assetsDir: '/assets',
     emptyOutDir: true,
-    minify: false,
+    minify: true,
     rollupOptions: {
       input: components,
       output: {
