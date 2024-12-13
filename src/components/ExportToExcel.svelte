@@ -38,13 +38,45 @@
 
   async function fetchData(url) {
     const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('The requested data could not be found. Please check the endpoint URL.');
+    const contentType = response.headers.get('content-type');
+    const responseText = await response.text();
+
+    if (!response.ok || (contentType && contentType.includes('text/html'))) {
+      // Try to extract error message from HTML response
+      if (responseText.includes('<html')) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = responseText;
+        
+        // Try to find error message in common locations
+        const errorMessage = 
+          tempDiv.querySelector('.abortMessage')?.textContent || 
+          tempDiv.querySelector('.box-round')?.textContent || 
+          tempDiv.querySelector('#alert')?.textContent ||
+          'Server returned an error page';
+          
+        // Clean up the error message
+        const cleanError = errorMessage
+          .replace(/\s+/g, ' ')
+          .trim()
+          .replace(/Back$/, '')
+          .replace(/\s*:\s*/g, ': ');
+          
+        throw new Error(cleanError);
       }
-      throw new Error(`Failed to fetch data (${response.status})`); 
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('The requested data could not be found. Please check the endpoint URL.');
+        }
+        throw new Error(`Failed to fetch data (${response.status})`);
+      }
     }
-    return response.text();
+
+    if (!responseText.trim()) {
+      throw new Error('Server returned empty response');
+    }
+
+    return responseText;
   }
 
   function processData(textData) {
@@ -155,9 +187,9 @@
 
         debugLog('Excel file created', exportFilename);
       })
-      .catch(error => {
-        console.error('[ExportToExcel] Export error:', error);
-        this.error = error instanceof Error ? error.message : 'Failed to export data';
+      .catch(err => {
+        console.error('[ExportToExcel] Export error:', err);
+        error = err instanceof Error ? err.message : 'Failed to export data';
       })
       .finally(() => {
         isLoading = false;
@@ -211,29 +243,32 @@
 </script>
 
 <div class="button-container format-selector">
-  <button 
-    class="main-button"
-    onclick={handleExport}
-    disabled={isLoading} 
-    class:loading={isLoading}
-    aria-busy={isLoading}
-  >
-    <slot>
-      {#if isLoading}
-        Exporting...
-      {:else}
-        Export to {selectedFormat}
-      {/if}
-    </slot>
-  </button>
-  <button
-    class="dropdown-toggle"
-    onclick={toggleDropdown}
-    disabled={isLoading}
-    aria-label="Select export format"
-  >
-    <span class="caret-down"></span>
-  </button>
+  <span class="error-message" class:visible={error}>{error}</span>
+  <div class="button-group">
+    <button 
+      class="main-button"
+      onclick={handleExport}
+      disabled={isLoading} 
+      class:loading={isLoading}
+      aria-busy={isLoading}
+    >
+      <slot>
+        {#if isLoading}
+          Exporting...
+        {:else}
+          Export to {selectedFormat}
+        {/if}
+      </slot>
+    </button>
+    <button
+      class="dropdown-toggle"
+      onclick={toggleDropdown}
+      disabled={isLoading}
+      aria-label="Select export format"
+    >
+      <span class="caret-down"></span>
+    </button>
+  </div>
   {#if showDropdown}
     <div class="dropdown-content">
       <button class="dropdown-item" onclick={() => selectFormat('xlsx')}>Excel (.xlsx)</button>
@@ -243,44 +278,56 @@
   {/if}
 </div>
 
-{#if error}
-  <div class="error" role="alert">
-    {error}
-  </div>
-{/if}
-
 <style>
   .button-container {
     display: inline-flex;
+    align-items: center;
+    gap: 10px;
     position: relative;
   }
 
-  button {
-    padding: 6px 12px;
-    background-color: var(--primary-color, #4CAF50);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1.42857143;
-    transition: background-color 0.2s, opacity 0.2s;
-    height: 32px;
+  .button-group {
+    display: inline-flex;
+    align-items: stretch;
   }
 
-  .main-button {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    flex: 3;
+  .error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-right: 10px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .error-message.visible {
+    opacity: 1;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 6px 12px;
+    background-color: var(--success-color, #28a745);
+    color: white;
+    border: none;
+    border-radius: 4px 0 0 4px;
+    cursor: pointer;
+    font-size: 14px;
     white-space: nowrap;
   }
 
+  .main-button {
+    border-radius: 4px 0 0 4px;
+    margin: 0;
+    padding-right: 32px; /* Make room for the spinner */
+  }
+
   .dropdown-toggle {
-    padding: 8px 10px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    flex: 1;
+    border-radius: 0 4px 4px 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 10px;
+    margin-left: 0;
   }
 
   .dropdown-content {
@@ -321,29 +368,22 @@
     margin-left: 4px;
   }
 
-  .error {
-    color: var(--error-color, #dc3545);
-    font-size: 14px;
-    margin-top: 8px;
-  }
-
   .loading {
     position: relative;
-    padding-right: 2em; /* Make room for the spinner */
   }
 
   .loading::after {
     content: '';
     position: absolute;
-    width: 1em;
-    height: 1em;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    margin-left: 8px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
 
   @keyframes spin {

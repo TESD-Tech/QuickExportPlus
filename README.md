@@ -84,6 +84,12 @@ Built with:
    - Click "Export to Excel" for instant .xlsx files
    - Watch the magic happen! ✨
 
+## 📝 Changelog
+
+### 2023-12-13
+- 🔍 Improved error handling: Now displays meaningful server error messages instead of generic failures
+- 🐛 Fixed: Better handling of HTML error responses from the server
+
 ## 🤝 Contributing
 
 Found a bug? Have a feature request? We'd love to hear from you! Open an issue or submit a pull request.
