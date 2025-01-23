@@ -1,7 +1,7 @@
 {
   "name": "ps-svelte",
   "private": true,
-  "version": "24.12.70",
+  "version": "25.01.01",
   "type": "module",
   "scripts": {
     "dev": "vite",
